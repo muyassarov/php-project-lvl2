@@ -1,5 +1,5 @@
 install:
 	composer install
 
-test:
+lint:
 	composer exec phpcs -- --standard=PSR12 gendiff src

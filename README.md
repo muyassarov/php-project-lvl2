@@ -1,6 +1,7 @@
 #PHP Project - #2
 
 ![CI](https://github.com/muyassarov/php-project-lvl2/workflows/CI/badge.svg)
+[![Maintainability](https://api.codeclimate.com/v1/badges/402ff681e86e6ab0f03d/maintainability)](https://codeclimate.com/github/muyassarov/php-project-lvl2/maintainability)
 
 My second PHP project on Hexlet education portal. This project is command line utility that generate 
 difference between two files. Three file types of supported: .json, .inv, .xml

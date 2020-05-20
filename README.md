@@ -1,7 +1,9 @@
 #PHP Project - #2
 
+![CI](https://github.com/muyassarov/php-project-lvl2/workflows/CI/badge.svg)
+
 My second PHP project on Hexlet education portal. This project is command line utility that generate 
-difference between two files. Three types of supported: .json, .inv, .xml
+difference between two files. Three file types of supported: .json, .inv, .xml
 
 ## Instalation 
 Use the php package manager [composer](https://getcomposer.org/) to install this project.
@@ -11,7 +13,7 @@ composer global require behruz/php-project-lvl2
 ```
   
 ## Usage
-Generate difference between two files run:
+To generate difference between two files run:
 ```bash
 gendiff --format=json before.json after.json
 ```

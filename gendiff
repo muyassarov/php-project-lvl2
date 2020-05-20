@@ -18,9 +18,18 @@ Options:
   --format <fmt>                Report format [default: pretty]
 DOC;
 
-require_once 'vendor/autoload.php';
-$args = Docopt::handle($doc, ['version' => 'Generate diff 1.0']);
+$autoloadPaths = [
+    __DIR__ . '/../../autoload.php',
+    __DIR__ . '/vendor/autoload.php'
+];
+foreach ($autoloadPaths as $autoloadPath) {
+    if (file_exists($autoloadPath)) {
+        require_once $autoloadPath;
+        break;
+    }
+}
 
+$args = Docopt::handle($doc, ['version' => 'Generate diff 1.0']);
 ['<firstFile>' => $firstFile, '<secondFile>' => $secondFile] = $args;
 
 $diff = genDiff($firstFile, $secondFile);

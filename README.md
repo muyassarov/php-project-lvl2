@@ -13,7 +13,7 @@ composer global require behruz/php-project-lvl2
 ## Usage
 Generate difference between two files run:
 ```bash
-gendiff - 
+gendiff --format=json before.json after.json
 ```
 
 

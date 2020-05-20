@@ -2,6 +2,8 @@
 
 <?php
 
+use function Differ\Differ\genDiff;
+
 $doc = <<<DOC
 Generate diff
 
@@ -18,6 +20,8 @@ DOC;
 
 require_once 'vendor/autoload.php';
 $args = Docopt::handle($doc, ['version' => 'Generate diff 1.0']);
-foreach ($args as $k => $v) {
-    echo $k . ': ' . json_encode($v) . PHP_EOL;
-}
+
+['<firstFile>' => $firstFile, '<secondFile>' => $secondFile] = $args;
+
+$diff = genDiff($firstFile, $secondFile);
+print_r($diff);

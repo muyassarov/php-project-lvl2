@@ -19,8 +19,8 @@ Options:
 DOC;
 
 $autoloadPaths = [
-    __DIR__ . '/../../autoload.php',
-    __DIR__ . '/vendor/autoload.php'
+    __DIR__ . '../../../autoload.php',
+    __DIR__ . '../vendor/autoload.php'
 ];
 foreach ($autoloadPaths as $autoloadPath) {
     if (file_exists($autoloadPath)) {

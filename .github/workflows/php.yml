@@ -37,10 +37,8 @@ jobs:
     - name: Run tests
       run: make test
       
-    - name: Test & publish code coverage
-      uses: paambaati/codeclimate-action@v2.6.0
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+    - name: Run code coverage report
+      uses: marsam/codeclimate-action@master
       with:
-        coverageCommand: make test
-        debug: true
+        command: npx jest --coverage --coverageReporters=Clover
+        reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}

@@ -9,7 +9,8 @@
         }
     ],
     "scripts": {
-        "test": "phpunit --coverage-clover tests/outputs/coverage.xml tests"
+        "test": "phpunit tests",
+        "test-coverage": "phpunit --coverage-clover tests/outputs/coverage.xml tests"
     },
     "autoload": {
         "files": [

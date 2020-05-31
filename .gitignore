@@ -1,3 +1,4 @@
 /vendor/
 ./after.json
 ./before.json
+/tests/outputs

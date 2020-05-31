@@ -7,7 +7,7 @@
 My second PHP project on Hexlet education portal. This project is command line utility that generate 
 difference between two files. Three file types of supported: .json, .inv, .xml
 
-## Instalation 
+## Installation 
 Use the php package manager [composer](https://getcomposer.org/) to install this project.
 
 ```bash

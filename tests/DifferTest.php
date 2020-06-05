@@ -21,6 +21,14 @@ class DifferTest extends TestCase
         $this->rootPath = './tests/fixtures/';
     }
 
+    public function testGenDiffJsonRecursiveFiles()
+    {
+        $diff     = genDiff("{$this->rootPath}before2.json", "{$this->rootPath}after2.json");
+        $expected = file_get_contents("{$this->rootPath}expected2.txt");
+
+        $this->assertSame($expected, $diff);
+    }
+
     public function testGenDiffJsonFiles()
     {
         $diff     = genDiff("{$this->rootPath}before.json", "{$this->rootPath}after.json");
@@ -30,7 +38,7 @@ class DifferTest extends TestCase
   + timeout: 20
   - timeout: 50
   - proxy: 123.234.53.22
-  + verbose: 1
+  + verbose: true
 }
 EOF;
 
@@ -46,7 +54,7 @@ EOF;
   + timeout: 20
   - timeout: 50
   - proxy: 123.234.53.22
-  + verbose: 1
+  + verbose: true
 }
 EOF;
         $this->assertSame($expected, $diff);

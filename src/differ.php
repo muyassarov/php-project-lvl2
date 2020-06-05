@@ -15,9 +15,10 @@ function genDiff($firstFilepath, $secondFilepath, $format = 'plain')
         return;
     }
 
-    $diff   = diff($firstFileContent, $secondFileContent);
-    $render = getRenderer($format);
-    return $render($diff);
+    $diff       = diff($firstFileContent, $secondFileContent);
+    $render     = getRenderer($format);
+    $diffString = $render($diff);
+    return $diffString;
 }
 
 function getParser(string $filepath): callable
@@ -66,41 +67,56 @@ function getRenderer(string $format): callable
  */
 function diff(array $beforeData, array $afterData): array
 {
-    $diff = [];
-    array_walk($beforeData, function ($value, $key) use ($afterData, &$diff) {
-        if (array_key_exists($key, $afterData)) {
-            if ($value == $afterData[$key]) {
-                $diff[] = [
-                    'key' => $key,
-                    'type' => 'unchanged',
-                    'value' => $value
+
+    $func = function ($oldNode, $newNode, $acc) use (&$func) {
+        foreach ($oldNode as $key => $value) {
+            if (!array_key_exists($key, $newNode)) {
+                $acc[] = [
+                    'key'   => $key,
+                    'type'  => 'removed',
+                    'value' => $value,
+                ];
+                continue;
+            }
+
+            if (is_array($value) && is_array($newNode[$key])) {
+                $acc[] = [
+                    'key'      => $key,
+                    'type'     => 'list',
+                    'children' => $func($value, $newNode[$key], []),
+                ];
+                continue;
+            }
+
+            if ($value == $newNode[$key]) {
+                $acc[] = [
+                    'key'   => $key,
+                    'type'  => 'unchanged',
+                    'value' => $value,
                 ];
             } else {
-                $diff[] = [
-                    'key' => $key,
-                    'type' => 'changed',
-                    'value' => $value,
-                    'newValue' => $afterData[$key],
+                $acc[] = [
+                    'key'      => $key,
+                    'type'     => 'changed',
+                    'value'    => $value,
+                    'newValue' => $newNode[$key],
                 ];
             }
-        } else {
-            $diff[] = [
-                'key' => $key,
-                'type' => 'removed',
+        }
+
+        foreach ($newNode as $key => $value) {
+            if (array_key_exists($key, $oldNode)) {
+                continue;
+            }
+            $acc[] = [
+                'key'   => $key,
+                'type'  => 'added',
                 'value' => $value,
             ];
         }
-    });
 
-    array_walk($afterData, function ($item, $key) use ($beforeData, &$diff) {
-        if (!array_key_exists($key, $beforeData)) {
-            $diff[] = [
-                'key' => $key,
-                'type' => 'added',
-                'value' => $item,
-            ];
-        }
-    });
+        return $acc;
+    };
 
-    return $diff;
+    return $func($beforeData, $afterData, []);
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Differ\Renderers\Plain;
+namespace Differ\Formatters\Json;
 
 use function Funct\Strings\repeat;
 
@@ -14,16 +14,16 @@ function render(array $data, $deep = 0): string
         $newValue = $datum['newValue'] ?? '';
 
         if (is_array($value)) {
-            $value = arrayToString($value, $deep);
+            $value = convertArrayToString($value, $deep);
         }
         if (is_array($newValue)) {
-            $newValue = arrayToString($newValue, $deep);
+            $newValue = convertArrayToString($newValue, $deep);
         }
         if (is_bool($value)) {
-            $value = $value ? 'true' : 'false';
+            $value = convertBoolToString($value);
         }
         if (is_bool($newValue)) {
-            $newValue = $newValue ? 'true' : 'false';
+            $newValue = convertBoolToString($newValue);
         }
 
         switch ($datum['type']) {
@@ -49,7 +49,7 @@ function render(array $data, $deep = 0): string
     return "{\n  " . implode("\n  ", $outputItems) . "\n{$prefix}}";
 }
 
-function arrayToString($value, $deep)
+function convertArrayToString($value, $deep)
 {
     $prefix = repeat(' ', ($deep + 1) * 4);
     if (!is_array($value)) {
@@ -58,10 +58,15 @@ function arrayToString($value, $deep)
     $values = [];
     foreach ($value as $key => $itemValue) {
         if (is_array($itemValue)) {
-            $values[] = arrayToString($itemValue, $deep + 1);
+            $values[] = convertArrayToString($itemValue, $deep + 1);
         } else {
             $values[] = "$prefix  $key: $itemValue";
         }
     }
     return "{\n  " . implode("\n  ", $values) . "\n{$prefix}}";
+}
+
+function convertBoolToString($value)
+{
+    return $value ? 'true' : 'false';
 }

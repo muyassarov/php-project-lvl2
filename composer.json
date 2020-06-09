@@ -15,11 +15,11 @@
     "autoload": {
         "files": [
             "src/differ.php",
-            "src/parsers/json.php",
-            "src/parsers/yaml.php",
-            "src/parsers/ini.php",
-            "src/renderers/json.php",
-            "src/renderers/plain.php"
+            "src/Parsers/json.php",
+            "src/Parsers/yaml.php",
+            "src/Parsers/ini.php",
+            "src/Formatters/json.php",
+            "src/Formatters/plain.php"
         ]
     },
     "require": {

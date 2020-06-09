@@ -4,7 +4,7 @@ namespace Differ\Differ;
 
 use function cli\line;
 
-function genDiff($firstFilepath, $secondFilepath, $format = 'plain')
+function genDiff($firstFilepath, $secondFilepath, $format = 'json')
 {
     try {
         $parser            = getParser($firstFilepath);
@@ -12,13 +12,18 @@ function genDiff($firstFilepath, $secondFilepath, $format = 'plain')
         $secondFileContent = $parser($secondFilepath);
     } catch (\Exception $e) {
         line("Error occurred while reading file. Message: {$e->getMessage()}");
-        return;
+        return false;
     }
 
-    $diff       = diff($firstFileContent, $secondFileContent);
-    $render     = getRenderer($format);
-    $diffString = $render($diff);
-    return $diffString;
+    $diff = diff($firstFileContent, $secondFileContent);
+
+    try {
+        $render = getRenderer($format);
+        return $render($diff);
+    } catch (\Exception $exception) {
+        line("Error occurred while getting formatter");
+    }
+    return false;
 }
 
 function getParser(string $filepath): callable
@@ -48,11 +53,11 @@ function getRenderer(string $format): callable
     switch ($format) {
         case 'json':
             return function ($data) {
-                return \Differ\Renderers\Json\render($data);
+                return \Differ\Formatters\Json\render($data);
             };
         case 'plain':
             return function ($data) {
-                return \Differ\Renderers\Plain\render($data);
+                return \Differ\Formatters\Plain\render($data);
             };
         default:
             throw new \Exception('Invalid output format');

@@ -24,7 +24,15 @@ class DifferTest extends TestCase
     public function testGenDiffJsonRecursiveFiles()
     {
         $diff     = genDiff("{$this->rootPath}before2.json", "{$this->rootPath}after2.json");
-        $expected = file_get_contents("{$this->rootPath}expected2.txt");
+        $expected = file_get_contents("{$this->rootPath}expected-json.txt");
+
+        $this->assertSame($expected, $diff);
+    }
+
+    public function testGenDiffJsonRecursiveFilesPlainOutput()
+    {
+        $diff     = genDiff("{$this->rootPath}before2.json", "{$this->rootPath}after2.json", 'plain');
+        $expected = file_get_contents("{$this->rootPath}expected-plain.txt");
 
         $this->assertSame($expected, $diff);
     }

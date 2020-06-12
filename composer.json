@@ -20,7 +20,6 @@
             "src/differ.php",
             "src/Parsers/json.php",
             "src/Parsers/yaml.php",
-            "src/Parsers/ini.php",
             "src/Formatters/json.php",
             "src/Formatters/plain.php",
             "src/Formatters/pretty.php"

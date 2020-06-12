@@ -14,61 +14,56 @@ use function Differ\Differ\genDiff;
  */
 class DifferTest extends TestCase
 {
-    protected $rootPath = '';
+    private const FIXTURES_PATH = './tests/fixtures/';
 
-    protected function setUp(): void
+    public function testGetDiffJsonComplexFilesJsonOutput()
     {
-        $this->rootPath = './tests/fixtures/';
+        $diff     = genDiff(
+            self::FIXTURES_PATH . 'before-complex.json',
+            self::FIXTURES_PATH . 'after-complex.json',
+            'json'
+        );
+        $expected = file_get_contents(self::FIXTURES_PATH . 'expected-json-complex.txt');
+        print_r($expected);
+        $this->assertSame($expected, $diff);
     }
 
-    public function testGenDiffJsonRecursiveFiles()
+    public function testGenDiffJsonComplexFilesPrettyOutput()
     {
-        $diff     = genDiff("{$this->rootPath}before2.json", "{$this->rootPath}after2.json");
-        $expected = file_get_contents("{$this->rootPath}expected-json.txt");
+        $diff     = genDiff(self::FIXTURES_PATH . 'before-complex.json', self::FIXTURES_PATH . 'after-complex.json');
+        $expected = file_get_contents(self::FIXTURES_PATH . 'expected-pretty-complex.txt');
 
         $this->assertSame($expected, $diff);
     }
 
-    public function testGenDiffJsonRecursiveFilesPlainOutput()
+    public function testGenDiffJsonComplexFilesPlainOutput()
     {
-        $diff     = genDiff("{$this->rootPath}before2.json", "{$this->rootPath}after2.json", 'plain');
-        $expected = file_get_contents("{$this->rootPath}expected-plain.txt");
+        $diff     = genDiff(
+            self::FIXTURES_PATH . 'before-complex.json',
+            self::FIXTURES_PATH . 'after-complex.json',
+            'plain'
+        );
+        $expected = file_get_contents(self::FIXTURES_PATH . 'expected-plain.txt');
 
         $this->assertSame($expected, $diff);
     }
 
-    public function testGenDiffJsonFiles()
+    public function testGenDiffJsonSimpleFilesPrettyOutput()
     {
-        $diff     = genDiff("{$this->rootPath}before.json", "{$this->rootPath}after.json");
-        $expected = <<<EOF
-{
-    host: hexlet.io
-  + timeout: 20
-  - timeout: 50
-  - proxy: 123.234.53.22
-  + verbose: true
-}
-EOF;
+        $diff     = genDiff(self::FIXTURES_PATH . 'before.json', self::FIXTURES_PATH . 'after.json');
+        $expected = file_get_contents(self::FIXTURES_PATH . 'expected-pretty.txt');
 
         $this->assertSame($expected, $diff);
     }
 
-    public function testGenDiffYamlFiles()
+    public function testGenDiffYamlSimpleFilesPrettyOutput()
     {
-        $diff     = genDiff("{$this->rootPath}before.yaml", "{$this->rootPath}after.yaml");
-        $expected = <<<EOF
-{
-    host: hexlet.io
-  + timeout: 20
-  - timeout: 50
-  - proxy: 123.234.53.22
-  + verbose: true
-}
-EOF;
+        $diff     = genDiff(self::FIXTURES_PATH . 'before.yaml', self::FIXTURES_PATH . 'after.yaml');
+        $expected = file_get_contents(self::FIXTURES_PATH . 'expected-pretty.txt');
         $this->assertSame($expected, $diff);
     }
 
-    public function testDiff()
+    public function testDiffAst()
     {
         $difference = diff([
             'firstName' => 'Behruz',

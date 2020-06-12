@@ -3,3 +3,4 @@
 ./before.json
 /tests/outputs
 .idea
+.phpunit.result.cache

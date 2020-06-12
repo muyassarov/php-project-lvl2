@@ -4,7 +4,7 @@ namespace Differ\Formatters\Plain;
 
 const COMPLEX_VALUE_STRING_PRESENTATION = 'complex value';
 
-function render(array $ast, $keys = []): string
+function format(array $ast, $keys = []): string
 {
     $outputLines    = [];
     $parentKeysLine = implode('.', $keys);
@@ -12,7 +12,7 @@ function render(array $ast, $keys = []): string
     foreach ($ast as $item) {
         if ($item['type'] === 'list') {
             $keys[]        = $item['key'];
-            $outputLines[] = render($item['children'], $keys);
+            $outputLines[] = format($item['children'], $keys);
             $keys          = [];
             continue;
         }

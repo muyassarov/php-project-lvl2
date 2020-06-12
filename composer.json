@@ -12,6 +12,9 @@
         "test": "phpunit tests",
         "test-coverage": "phpunit --coverage-clover tests/outputs/coverage.xml tests"
     },
+    "bin": [
+        "bin/gendiff"
+    ],
     "autoload": {
         "files": [
             "src/differ.php",

@@ -2,3 +2,4 @@
 ./after.json
 ./before.json
 /tests/outputs
+.phpunit.result.cache

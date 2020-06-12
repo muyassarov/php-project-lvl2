@@ -21,7 +21,7 @@ function genDiff($firstFilepath, $secondFilepath, $format = 'pretty')
         $render = getFormatter($format);
         return $render($diff);
     } catch (\Exception $exception) {
-        line("Error occurred while getting formatter");
+        line("Error occurred while getting formatter. Message: {$exception->getMessage()}");
     }
     return false;
 }

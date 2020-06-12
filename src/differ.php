@@ -39,10 +39,6 @@ function getParser(string $filepath): callable
             return function ($filename) {
                 return \Differ\Parsers\Yaml\parse($filename);
             };
-        case 'ini':
-            return function ($filename) {
-                return \Differ\Parsers\Ini\parse($filename);
-            };
         default:
             throw new \Exception('Invalid file type');
     }

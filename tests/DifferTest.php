@@ -24,13 +24,15 @@ class DifferTest extends TestCase
             'json'
         );
         $expected = file_get_contents(self::FIXTURES_PATH . 'expected-json-complex.txt');
-        print_r($expected);
         $this->assertSame($expected, $diff);
     }
 
     public function testGenDiffJsonComplexFilesPrettyOutput()
     {
-        $diff     = genDiff(self::FIXTURES_PATH . 'before-complex.json', self::FIXTURES_PATH . 'after-complex.json');
+        $diff     = genDiff(
+            self::FIXTURES_PATH . 'before-complex.json',
+            self::FIXTURES_PATH . 'after-complex.json'
+        );
         $expected = file_get_contents(self::FIXTURES_PATH . 'expected-pretty-complex.txt');
 
         $this->assertSame($expected, $diff);

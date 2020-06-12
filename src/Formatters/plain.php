@@ -4,23 +4,24 @@ namespace Differ\Formatters\Plain;
 
 const COMPLEX_VALUE_STRING_PRESENTATION = 'complex value';
 
-function format(array $ast, $keys = []): string
+function format(array $ast, array $keys = []): string
 {
     $outputLines    = [];
     $parentKeysLine = implode('.', $keys);
 
     foreach ($ast as $item) {
-        if ($item['type'] === 'list') {
-            $keys[]        = $item['key'];
-            $outputLines[] = format($item['children'], $keys);
+        ['key' => $key, 'type' => $type, 'children' => $children, 'value' => $value, 'newValue' => $newValue] = $item;
+        if ($type === 'list') {
+            $keys[]        = $key;
+            $outputLines[] = format($children, $keys);
             $keys          = [];
             continue;
         }
 
-        $key   = $parentKeysLine ? "$parentKeysLine.{$item['key']}" : $item['key'];
-        $value = getAstItemValueStringPresentation($item['value']);
+        $key   = $parentKeysLine ? "$parentKeysLine.{$key}" : $key;
+        $value = getAstItemValueStringPresentation($value);
 
-        switch ($item['type']) {
+        switch ($type) {
             case 'unchanged':
                 break;
             case 'removed':
@@ -30,7 +31,7 @@ function format(array $ast, $keys = []): string
                 $outputLines[] = "Property '$key' was added with value: '$value'";
                 break;
             case 'changed':
-                $newValue      = getAstItemValueStringPresentation($item['newValue']);
+                $newValue      = getAstItemValueStringPresentation($newValue);
                 $outputLines[] = "Property '$key' was changed. From '$value' to '$newValue'";
                 break;
         }
@@ -39,7 +40,7 @@ function format(array $ast, $keys = []): string
     return implode("\n", $outputLines);
 }
 
-function getAstItemValueStringPresentation($value)
+function getAstItemValueStringPresentation($value): string
 {
     return is_array($value) ? COMPLEX_VALUE_STRING_PRESENTATION : $value;
 }

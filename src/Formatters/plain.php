@@ -10,16 +10,16 @@ function format(array $ast, array $keys = []): string
     $parentKeysLine = implode('.', $keys);
 
     foreach ($ast as $item) {
-        ['key' => $key, 'type' => $type, 'children' => $children, 'value' => $value, 'newValue' => $newValue] = $item;
+        ['key' => $key, 'type' => $type] = $item;
         if ($type === 'list') {
             $keys[]        = $key;
-            $outputLines[] = format($children, $keys);
+            $outputLines[] = format($item['children'], $keys);
             $keys          = [];
             continue;
         }
 
         $key   = $parentKeysLine ? "$parentKeysLine.{$key}" : $key;
-        $value = getAstItemValueStringPresentation($value);
+        $value = getAstItemValueStringPresentation($item['value']);
 
         switch ($type) {
             case 'unchanged':
@@ -31,7 +31,7 @@ function format(array $ast, array $keys = []): string
                 $outputLines[] = "Property '$key' was added with value: '$value'";
                 break;
             case 'changed':
-                $newValue      = getAstItemValueStringPresentation($newValue);
+                $newValue      = getAstItemValueStringPresentation($item['newValue']);
                 $outputLines[] = "Property '$key' was changed. From '$value' to '$newValue'";
                 break;
         }

@@ -15,15 +15,9 @@ function genDiff($firstFilepath, $secondFilepath, $format = 'pretty')
         return false;
     }
 
-    $diff = diff($firstFileContent, $secondFileContent);
-
-    try {
-        $render = getFormatter($format);
-        return $render($diff);
-    } catch (\Exception $exception) {
-        line("Error occurred while getting formatter. Message: {$exception->getMessage()}");
-    }
-    return false;
+    $diff      = diff($firstFileContent, $secondFileContent);
+    $formatter = getFormatter($format);
+    return $formatter($diff);
 }
 
 function getParser(string $filepath): callable

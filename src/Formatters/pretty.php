@@ -11,17 +11,18 @@ function format(array $ast, $level = 0): string
     $outputItems = [];
     $prefix      = repeat(' ', $level * NUMBER_OF_SPACES);
     foreach ($ast as $datum) {
-        ['key' => $key, 'type' => $type, 'value' => $value, 'newValue' => $newValue] = $datum;
+        ['key' => $key, 'type' => $type] = $datum;
 
         switch ($type) {
             case 'list':
                 $outputItems[] = "{$prefix}  {$key}: " . format($datum['children'], $level + 1);
                 break;
             case 'unchanged':
-                $value = toString($value, $level);
+                $value         = toString($datum['value'], $level);
                 $outputItems[] = "{$prefix}  {$key}: {$value}";
                 break;
             case 'changed':
+                ['value' => $value, 'newValue' => $newValue] = $datum;
                 $value    = toString($value, $level);
                 $newValue = toString($newValue, $level);
 
@@ -29,11 +30,11 @@ function format(array $ast, $level = 0): string
                 $outputItems[] = "{$prefix}- {$key}: {$value}";
                 break;
             case 'removed':
-                $value = toString($value, $level);
+                $value = toString($datum['value'], $level);
                 $outputItems[] = "{$prefix}- {$key}: {$value}";
                 break;
             case 'added':
-                $value = toString($value, $level);
+                $value = toString($datum['value'], $level);
                 $outputItems[] = "{$prefix}+ {$key}: {$value}";
                 break;
         }

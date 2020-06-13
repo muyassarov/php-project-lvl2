@@ -30,7 +30,7 @@ foreach ($autoloadPaths as $autoloadPath) {
 }
 
 $args = Docopt::handle($doc, ['version' => 'Generate diff 1.0']);
-['<firstFile>' => $firstFile, '<secondFile>' => $secondFile] = $args;
+['<firstFile>' => $firstFile, '<secondFile>' => $secondFile, '--format' => $format] = $args;
 
-$diff = genDiff($firstFile, $secondFile);
+$diff = genDiff($firstFile, $secondFile, $format);
 print_r($diff);

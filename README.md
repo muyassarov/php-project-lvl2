@@ -25,3 +25,4 @@ gendiff --format=json before.json after.json
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Video how to install and use
+[![asciicast](https://asciinema.org/a/ydqnciijgVg2ceLfiXCbqkOwV.svg)](https://asciinema.org/a/ydqnciijgVg2ceLfiXCbqkOwV)

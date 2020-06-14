@@ -8,10 +8,6 @@
             "email": "muyassarov@gmail.com"
         }
     ],
-    "scripts": {
-        "test": "phpunit tests",
-        "test-coverage": "phpunit --coverage-clover tests/outputs/coverage.xml tests"
-    },
     "bin": [
         "bin/gendiff"
     ],

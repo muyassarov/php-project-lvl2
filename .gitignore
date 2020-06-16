@@ -1,6 +1,4 @@
 /vendor/
-./after.json
-./before.json
 /tests/outputs
 .idea
 .phpunit.result.cache

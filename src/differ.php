@@ -2,8 +2,6 @@
 
 namespace Differ\Differ;
 
-use function cli\line;
-
 function genDiff($firstFilepath, $secondFilepath, $format = 'pretty')
 {
     try {
@@ -11,7 +9,7 @@ function genDiff($firstFilepath, $secondFilepath, $format = 'pretty')
         $firstFileContent  = $parser($firstFilepath);
         $secondFileContent = $parser($secondFilepath);
     } catch (\Exception $e) {
-        line("Error occurred while reading file. Message: {$e->getMessage()}");
+        echo "Error occurred while reading file";
         return false;
     }
 

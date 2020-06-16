@@ -8,7 +8,7 @@ lint-fix:
 	composer exec phpcbf -- --standard=PSR12 src bin tests
 
 test:
-	composer exec phpunit tests
+	composer test
 
 test-coverage:
 	composer exec -- phpunit --coverage-clover tests/outputs/coverage.xml tests

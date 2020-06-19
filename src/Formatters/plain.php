@@ -11,7 +11,7 @@ function format(array $ast, array $keys = []): string
 
     foreach ($ast as $item) {
         ['key' => $key, 'type' => $type] = $item;
-        if ($type === 'list') {
+        if ($type === 'nested') {
             $keys[]        = $key;
             $outputLines[] = format($item['children'], $keys);
             $keys          = [];
@@ -19,7 +19,7 @@ function format(array $ast, array $keys = []): string
         }
 
         $key   = $parentKeysLine ? "$parentKeysLine.{$key}" : $key;
-        $value = getAstItemValueStringPresentation($item['value']);
+        $value = getItemStringPresentation($item['value']);
 
         switch ($type) {
             case 'unchanged':
@@ -31,7 +31,7 @@ function format(array $ast, array $keys = []): string
                 $outputLines[] = "Property '$key' was added with value: '$value'";
                 break;
             case 'changed':
-                $newValue      = getAstItemValueStringPresentation($item['newValue']);
+                $newValue      = getItemStringPresentation($item['newValue']);
                 $outputLines[] = "Property '$key' was changed. From '$value' to '$newValue'";
                 break;
         }
@@ -40,7 +40,7 @@ function format(array $ast, array $keys = []): string
     return implode("\n", $outputLines);
 }
 
-function getAstItemValueStringPresentation($value): string
+function getItemStringPresentation($value): string
 {
     return is_array($value) ? COMPLEX_VALUE_STRING_PRESENTATION : $value;
 }

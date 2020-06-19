@@ -4,7 +4,7 @@ namespace Differ\Parsers\Yaml;
 
 use Symfony\Component\Yaml\Yaml;
 
-function parse($filepath)
+function parse($data)
 {
-    return Yaml::parseFile($filepath);
+    return Yaml::parse($data);
 }

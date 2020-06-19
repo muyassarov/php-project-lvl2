@@ -2,56 +2,33 @@
 
 namespace Differ\Differ;
 
+use function Differ\Formatter\format;
+use function Differ\Parsers\parse;
+use function Funct\Collection\union;
+
 function genDiff($firstFilepath, $secondFilepath, $format = 'pretty')
 {
-    try {
-        $parser            = getParser($firstFilepath);
-        $firstFileContent  = $parser($firstFilepath);
-        $secondFileContent = $parser($secondFilepath);
-    } catch (\Exception $e) {
-        echo "Error occurred while reading file";
-        return false;
-    }
+    $extension            = getFileExtension($firstFilepath);
+    $firstFileRawContent  = getFileContent($firstFilepath);
+    $secondFileRawContent = getFileContent($secondFilepath);
+    $firstContent         = parse($firstFileRawContent, $extension);
+    $secondContent        = parse($secondFileRawContent, $extension);
 
-    $diff      = diff($firstFileContent, $secondFileContent);
-    $formatter = getFormatter($format);
-    return $formatter($diff);
+    $ast = diff($firstContent, $secondContent);
+    return format($ast, $format);
 }
 
-function getParser(string $filepath): callable
+function getFileContent(string $filepath): string
 {
-    ['extension' => $extension] = pathinfo($filepath);
-
-    switch ($extension) {
-        case 'json':
-            return function ($filename) {
-                return \Differ\Parsers\Json\parse($filename);
-            };
-        case 'yaml':
-            return function ($filename) {
-                return \Differ\Parsers\Yaml\parse($filename);
-            };
-        default:
-            throw new \Exception('Invalid file type');
+    if (is_file($filepath) && is_readable($filepath)) {
+        return file_get_contents($filepath);
     }
+    throw new \Exception("File: {$filepath} could not be read");
 }
 
-function getFormatter(string $format): callable
+function getFileExtension(string $filepath): string
 {
-    switch ($format) {
-        case 'json':
-            return function ($data) {
-                return \Differ\Formatters\Json\format($data);
-            };
-        case 'plain':
-            return function ($data) {
-                return \Differ\Formatters\Plain\format($data);
-            };
-        default:
-            return function ($data) {
-                return \Differ\Formatters\Pretty\format($data);
-            };
-    }
+    return pathinfo($filepath)['extension'];
 }
 
 /**
@@ -62,55 +39,50 @@ function getFormatter(string $format): callable
  */
 function diff(array $beforeData, array $afterData): array
 {
-
     $func = function ($oldNode, $newNode, $acc) use (&$func) {
-        foreach ($oldNode as $key => $value) {
+        $unionKeys = union(array_keys($oldNode), array_keys($newNode));
+
+        return array_reduce($unionKeys, function ($accumulator, $key) use ($oldNode, $newNode, $func) {
             if (!array_key_exists($key, $newNode)) {
-                $acc[] = [
+                $accumulator[] = [
                     'key'   => $key,
                     'type'  => 'removed',
-                    'value' => $value,
+                    'value' => $oldNode[$key],
                 ];
-                continue;
+                return $accumulator;
+            }
+            if (!array_key_exists($key, $oldNode)) {
+                $accumulator[] = [
+                    'key'   => $key,
+                    'type'  => 'added',
+                    'value' => $newNode[$key],
+                ];
+                return $accumulator;
             }
 
-            if (is_array($value) && is_array($newNode[$key])) {
-                $acc[] = [
+            if (is_array($oldNode[$key]) && is_array($newNode[$key])) {
+                $accumulator[] = [
                     'key'      => $key,
-                    'type'     => 'list',
-                    'children' => $func($value, $newNode[$key], []),
+                    'type'     => 'nested',
+                    'children' => $func($oldNode[$key], $newNode[$key], []),
                 ];
-                continue;
-            }
-
-            if ($value == $newNode[$key]) {
-                $acc[] = [
+            } elseif ($oldNode[$key] == $newNode[$key]) {
+                $accumulator[] = [
                     'key'   => $key,
                     'type'  => 'unchanged',
-                    'value' => $value,
+                    'value' => $oldNode[$key],
                 ];
             } else {
-                $acc[] = [
+                $accumulator[] = [
                     'key'      => $key,
                     'type'     => 'changed',
-                    'value'    => $value,
+                    'value'    => $oldNode[$key],
                     'newValue' => $newNode[$key],
                 ];
             }
-        }
 
-        foreach ($newNode as $key => $value) {
-            if (array_key_exists($key, $oldNode)) {
-                continue;
-            }
-            $acc[] = [
-                'key'   => $key,
-                'type'  => 'added',
-                'value' => $value,
-            ];
-        }
-
-        return $acc;
+            return $accumulator;
+        }, $acc);
     };
 
     return $func($beforeData, $afterData, []);

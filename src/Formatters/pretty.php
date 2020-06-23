@@ -6,51 +6,55 @@ use function Funct\Strings\repeat;
 
 const NUMBER_OF_SPACES = 4;
 
-function format(array $ast, $nestingLevel = 0): string
+function format(array $ast): string
 {
-    $outputItems = [];
-    $prefix      = getPrefix($nestingLevel);
-    foreach ($ast as $datum) {
-        ['key' => $key, 'type' => $type] = $datum;
-
-        switch ($type) {
-            case 'nested':
-                $outputItems[] = "{$prefix}  {$key}: " . format($datum['children'], $nestingLevel + 1);
-                break;
-            case 'unchanged':
-                $value         = toString($datum['value'], $nestingLevel);
-                $outputItems[] = "{$prefix}  {$key}: {$value}";
-                break;
-            case 'changed':
-                ['value' => $value, 'newValue' => $newValue] = $datum;
-                $value    = toString($value, $nestingLevel);
-                $newValue = toString($newValue, $nestingLevel);
-
-                $outputItems[] = "{$prefix}+ {$key}: {$newValue}";
-                $outputItems[] = "{$prefix}- {$key}: {$value}";
-                break;
-            case 'removed':
-                $value         = toString($datum['value'], $nestingLevel);
-                $outputItems[] = "{$prefix}- {$key}: {$value}";
-                break;
-            case 'added':
-                $value         = toString($datum['value'], $nestingLevel);
-                $outputItems[] = "{$prefix}+ {$key}: {$value}";
-                break;
+    $format = function ($data, $depth = 0) use (&$format): string {
+        $outputItems = [];
+        $prefix      = getPrefix($depth);
+        foreach ($data as $datum) {
+            ['key' => $key, 'type' => $type] = $datum;
+        
+            switch ($type) {
+                case 'nested':
+                    $outputItems[] = "{$prefix}  {$key}: " . $format($datum['children'], $depth + 1);
+                    break;
+                case 'unchanged':
+                    $value         = toString($datum['value'], $depth);
+                    $outputItems[] = "{$prefix}  {$key}: {$value}";
+                    break;
+                case 'changed':
+                    ['value' => $value, 'newValue' => $newValue] = $datum;
+                    $value    = toString($value, $depth);
+                    $newValue = toString($newValue, $depth);
+                
+                    $outputItems[] = "{$prefix}+ {$key}: {$newValue}";
+                    $outputItems[] = "{$prefix}- {$key}: {$value}";
+                    break;
+                case 'removed':
+                    $value         = toString($datum['value'], $depth);
+                    $outputItems[] = "{$prefix}- {$key}: {$value}";
+                    break;
+                case 'added':
+                    $value         = toString($datum['value'], $depth);
+                    $outputItems[] = "{$prefix}+ {$key}: {$value}";
+                    break;
+            }
         }
-    }
-
-    return "{\n  " . implode("\n  ", $outputItems) . "\n{$prefix}}";
+        
+        return "{\n  " . implode("\n  ", $outputItems) . "\n{$prefix}}";
+    };
+    
+    return $format($ast);
 }
 
-function convertArrayToString(array $node, int $nestingLevel): string
+function convertArrayToString(array $node, int $depth): string
 {
-    $prefix = getPrefix($nestingLevel);
+    $prefix = getPrefix($depth);
     $keys   = array_keys($node);
 
-    $arrayStrings = array_reduce($keys, function ($acc, $key) use ($node, $nestingLevel, $prefix) {
+    $arrayStrings = array_reduce($keys, function ($acc, $key) use ($node, $depth, $prefix) {
         if (is_array($node[$key])) {
-            $acc[] = convertArrayToString($node[$key], ++$nestingLevel);
+            $acc[] = convertArrayToString($node[$key], ++$depth);
         } else {
             $acc[] = "$prefix  $key: {$node[$key]}";
         }
@@ -65,10 +69,10 @@ function convertBoolToString($value): string
     return $value ? 'true' : 'false';
 }
 
-function toString($value, $nestingLevel): string
+function toString($value, $depth): string
 {
     if (is_array($value)) {
-        return convertArrayToString($value, ++$nestingLevel);
+        return convertArrayToString($value, ++$depth);
     }
     if (is_bool($value)) {
         return convertBoolToString($value);
@@ -77,7 +81,7 @@ function toString($value, $nestingLevel): string
     return $value;
 }
 
-function getPrefix($nestingLevel)
+function getPrefix($depth)
 {
-    return repeat(' ', $nestingLevel * NUMBER_OF_SPACES);
+    return repeat(' ', $depth * NUMBER_OF_SPACES);
 }

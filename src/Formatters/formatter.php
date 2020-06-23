@@ -6,7 +6,7 @@ function format($data, $format)
 {
     switch ($format) {
         case 'json':
-            return \Differ\Formatters\Json\format($data);
+            return json_encode($data);
         case 'plain':
             return \Differ\Formatters\Plain\format($data);
         default:

@@ -8,12 +8,12 @@ use function Funct\Collection\union;
 
 function genDiff($firstFilepath, $secondFilepath, $format = 'pretty')
 {
-    $extension            = getFileExtension($firstFilepath);
+    $dataType             = getFileDataType($firstFilepath);
     $firstFileRawContent  = getFileContent($firstFilepath);
     $secondFileRawContent = getFileContent($secondFilepath);
-    $firstContent         = parse($firstFileRawContent, $extension);
-    $secondContent        = parse($secondFileRawContent, $extension);
-
+    $firstContent         = parse($firstFileRawContent, $dataType);
+    $secondContent        = parse($secondFileRawContent, $dataType);
+    
     $ast = diff($firstContent, $secondContent);
     return format($ast, $format);
 }
@@ -26,9 +26,15 @@ function getFileContent(string $filepath): string
     throw new \Exception("File: {$filepath} could not be read");
 }
 
-function getFileExtension(string $filepath): string
+function getFileDataType(string $filepath): string
 {
-    return pathinfo($filepath)['extension'];
+    $fileExtension = pathinfo($filepath, PATHINFO_EXTENSION);
+    switch ($fileExtension) {
+        case 'yml':
+            return 'yaml';
+        default:
+            return $fileExtension;
+    }
 }
 
 /**
@@ -39,51 +45,39 @@ function getFileExtension(string $filepath): string
  */
 function diff(array $beforeData, array $afterData): array
 {
-    $func = function ($oldNode, $newNode, $acc) use (&$func) {
-        $unionKeys = union(array_keys($oldNode), array_keys($newNode));
-
-        return array_reduce($unionKeys, function ($accumulator, $key) use ($oldNode, $newNode, $func) {
+    $iter = function ($oldNode, $newNode) use (&$iter) {
+        $unionKeys = array_values(union(array_keys($oldNode), array_keys($newNode)));
+        
+        return array_map(function ($key) use ($oldNode, $newNode, $iter) {
             if (!array_key_exists($key, $newNode)) {
-                $accumulator[] = [
-                    'key'   => $key,
-                    'type'  => 'removed',
-                    'value' => $oldNode[$key],
-                ];
-                return $accumulator;
+                return createAstNode($key, 'removed', ['value' => $oldNode[$key]]);
             }
             if (!array_key_exists($key, $oldNode)) {
-                $accumulator[] = [
-                    'key'   => $key,
-                    'type'  => 'added',
-                    'value' => $newNode[$key],
-                ];
-                return $accumulator;
+                return createAstNode($key, 'added', ['value' => $newNode[$key]]);
             }
-
             if (is_array($oldNode[$key]) && is_array($newNode[$key])) {
-                $accumulator[] = [
-                    'key'      => $key,
-                    'type'     => 'nested',
-                    'children' => $func($oldNode[$key], $newNode[$key], []),
-                ];
+                return createAstNode($key, 'nested', [
+                    'children' => $iter($oldNode[$key], $newNode[$key]),
+                ]);
             } elseif ($oldNode[$key] == $newNode[$key]) {
-                $accumulator[] = [
-                    'key'   => $key,
-                    'type'  => 'unchanged',
-                    'value' => $oldNode[$key],
-                ];
-            } else {
-                $accumulator[] = [
-                    'key'      => $key,
-                    'type'     => 'changed',
-                    'value'    => $oldNode[$key],
-                    'newValue' => $newNode[$key],
-                ];
+                return createAstNode($key, 'unchanged', ['value' => $oldNode[$key]]);
             }
-
-            return $accumulator;
-        }, $acc);
+            
+            return createAstNode($key, 'changed', [
+                'value'    => $oldNode[$key],
+                'newValue' => $newNode[$key],
+            ]);
+        }, $unionKeys);
     };
+    
+    return $iter($beforeData, $afterData);
+}
 
-    return $func($beforeData, $afterData, []);
+function createAstNode($key, $type, $extraData = [])
+{
+    $node = [
+        'key'  => $key,
+        'type' => $type,
+    ];
+    return array_merge($node, $extraData);
 }

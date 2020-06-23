@@ -2,14 +2,16 @@
 
 namespace Differ\Parsers;
 
-function parse($rawData, $type)
+use Symfony\Component\Yaml\Yaml;
+
+function parse($rawData, $dataType)
 {
-    switch ($type) {
+    switch ($dataType) {
         case 'json':
-            return \Differ\Parsers\Json\parse($rawData);
+            return json_decode($rawData, true);
         case 'yaml':
-            return \Differ\Parsers\Yaml\parse($rawData);
+            return Yaml::parse($rawData);
         default:
-            throw new \InvalidArgumentException('Invalid content type, could not parse raw data');
+            throw new \InvalidArgumentException('Invalid content data type, could not parse raw data');
     }
 }

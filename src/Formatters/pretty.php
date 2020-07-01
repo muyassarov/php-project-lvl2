@@ -6,78 +6,61 @@ use function Funct\Strings\repeat;
 
 const NUMBER_OF_SPACES = 4;
 
-function format(array $ast): string
+function render(array $ast): string
 {
-    $format = function ($data, $depth = 0) use (&$format): string {
-        $outputItems = [];
+    $iter = function ($data, $depth = 0) use (&$iter): string {
         $prefix      = getPrefix($depth);
-        foreach ($data as $datum) {
-            ['key' => $key, 'type' => $type] = $datum;
-        
+        $outputItems = array_map(function ($item) use (&$iter, $depth) {
+            $prefix = getPrefix($depth);
+            ['key' => $key, 'type' => $type] = $item;
+            
             switch ($type) {
                 case 'nested':
-                    $outputItems[] = "{$prefix}  {$key}: " . $format($datum['children'], $depth + 1);
-                    break;
+                    return "{$prefix}  {$key}: " . $iter($item['children'], $depth + 1);
                 case 'unchanged':
-                    $value         = toString($datum['value'], $depth);
-                    $outputItems[] = "{$prefix}  {$key}: {$value}";
-                    break;
+                    $value = stringify($item['value'], $depth);
+                    return "{$prefix}  {$key}: {$value}";
                 case 'changed':
-                    ['value' => $value, 'newValue' => $newValue] = $datum;
-                    $value    = toString($value, $depth);
-                    $newValue = toString($newValue, $depth);
-                
-                    $outputItems[] = "{$prefix}+ {$key}: {$newValue}";
-                    $outputItems[] = "{$prefix}- {$key}: {$value}";
-                    break;
+                    ['value' => $value, 'newValue' => $newValue] = $item;
+                    $value    = stringify($value, $depth);
+                    $newValue = stringify($newValue, $depth);
+                    return "{$prefix}+ {$key}: {$newValue}\n  {$prefix}- {$key}: {$value}";
                 case 'removed':
-                    $value         = toString($datum['value'], $depth);
-                    $outputItems[] = "{$prefix}- {$key}: {$value}";
-                    break;
+                    $value = stringify($item['value'], $depth);
+                    return "{$prefix}- {$key}: {$value}";
                 case 'added':
-                    $value         = toString($datum['value'], $depth);
-                    $outputItems[] = "{$prefix}+ {$key}: {$value}";
-                    break;
+                    $value = stringify($item['value'], $depth);
+                    return "{$prefix}+ {$key}: {$value}";
+                default:
+                    throw new \Exception('Invalid node type, node could not be rendered');
             }
-        }
+        }, $data);
         
         return "{\n  " . implode("\n  ", $outputItems) . "\n{$prefix}}";
     };
     
-    return $format($ast);
+    return $iter($ast);
 }
 
-function convertArrayToString(array $node, int $depth): string
-{
-    $prefix = getPrefix($depth);
-    $keys   = array_keys($node);
-
-    $arrayStrings = array_reduce($keys, function ($acc, $key) use ($node, $depth, $prefix) {
-        if (is_array($node[$key])) {
-            $acc[] = convertArrayToString($node[$key], ++$depth);
-        } else {
-            $acc[] = "$prefix  $key: {$node[$key]}";
-        }
-        return $acc;
-    }, []);
-
-    return "{\n  " . implode("\n  ", $arrayStrings) . "\n{$prefix}}";
-}
-
-function convertBoolToString($value): string
-{
-    return $value ? 'true' : 'false';
-}
-
-function toString($value, $depth): string
+function stringify($value, $depth): string
 {
     if (is_array($value)) {
-        return convertArrayToString($value, ++$depth);
+        $prefix = getPrefix($depth + 1);
+        $keys   = array_keys($value);
+        
+        $arrayStrings = array_map(function ($key) use ($value, $depth, $prefix) {
+            if (is_array($value[$key])) {
+                return "$prefix  $key: " . stringify($value[$key], $depth + 1);
+            } else {
+                return "$prefix  $key: {$value[$key]}";
+            }
+        }, $keys);
+        
+        return "{\n  " . implode("\n  ", $arrayStrings) . "\n{$prefix}}";
+    } elseif (is_bool($value)) {
+        return $value ? 'true' : 'false';
     }
-    if (is_bool($value)) {
-        return convertBoolToString($value);
-    }
-
+    
     return $value;
 }
 

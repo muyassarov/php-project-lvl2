@@ -3,17 +3,18 @@
 namespace Differ\Differ;
 
 use function Differ\Formatter\format;
-use function Differ\Parsers\parse;
+use function Differ\Parser\parse;
 use function Funct\Collection\union;
 
 function genDiff($firstFilepath, $secondFilepath, $format = 'pretty')
 {
-    $dataType             = getFileDataType($firstFilepath);
+    $firstFileDataType    = getFileDataType($firstFilepath);
+    $secondFileDataType   = getFileDataType($firstFilepath);
     $firstFileRawContent  = getFileContent($firstFilepath);
     $secondFileRawContent = getFileContent($secondFilepath);
-    $firstContent         = parse($firstFileRawContent, $dataType);
-    $secondContent        = parse($secondFileRawContent, $dataType);
-    
+    $firstContent         = parse($firstFileRawContent, $firstFileDataType);
+    $secondContent        = parse($secondFileRawContent, $secondFileDataType);
+
     $ast = diff($firstContent, $secondContent);
     return format($ast, $format);
 }
@@ -29,12 +30,10 @@ function getFileContent(string $filepath): string
 function getFileDataType(string $filepath): string
 {
     $fileExtension = pathinfo($filepath, PATHINFO_EXTENSION);
-    switch ($fileExtension) {
-        case 'yml':
-            return 'yaml';
-        default:
-            return $fileExtension;
+    if ($fileExtension == 'yml') {
+        return 'yaml';
     }
+    return $fileExtension;
 }
 
 /**
@@ -47,37 +46,37 @@ function diff(array $beforeData, array $afterData): array
 {
     $iter = function ($oldNode, $newNode) use (&$iter) {
         $unionKeys = array_values(union(array_keys($oldNode), array_keys($newNode)));
-        
+
         return array_map(function ($key) use ($oldNode, $newNode, $iter) {
             if (!array_key_exists($key, $newNode)) {
-                return createAstNode($key, 'removed', ['value' => $oldNode[$key]]);
+                return createAstNode($key, 'removed', $oldNode[$key]);
+            } elseif (!array_key_exists($key, $oldNode)) {
+                return createAstNode($key, 'added', $newNode[$key]);
+            } else {
+                $value    = $oldNode[$key];
+                $newValue = $newNode[$key];
+                if (is_array($value) && is_array($newValue)) {
+                    $children = $iter($value, $newValue);
+                    return createAstNode($key, 'nested', null, null, $children);
+                } elseif ($value == $newValue) {
+                    return createAstNode($key, 'unchanged', $value);
+                } else {
+                    return createAstNode($key, 'changed', $value, $newValue);
+                }
             }
-            if (!array_key_exists($key, $oldNode)) {
-                return createAstNode($key, 'added', ['value' => $newNode[$key]]);
-            }
-            if (is_array($oldNode[$key]) && is_array($newNode[$key])) {
-                return createAstNode($key, 'nested', [
-                    'children' => $iter($oldNode[$key], $newNode[$key]),
-                ]);
-            } elseif ($oldNode[$key] == $newNode[$key]) {
-                return createAstNode($key, 'unchanged', ['value' => $oldNode[$key]]);
-            }
-            
-            return createAstNode($key, 'changed', [
-                'value'    => $oldNode[$key],
-                'newValue' => $newNode[$key],
-            ]);
         }, $unionKeys);
     };
-    
+
     return $iter($beforeData, $afterData);
 }
 
-function createAstNode($key, $type, $extraData = [])
+function createAstNode($key, $type, $value = null, $newValue = null, $children = [])
 {
-    $node = [
-        'key'  => $key,
-        'type' => $type,
+    return [
+        'key'      => $key,
+        'type'     => $type,
+        'value'    => $value,
+        'newValue' => $newValue,
+        'children' => $children
     ];
-    return array_merge($node, $extraData);
 }

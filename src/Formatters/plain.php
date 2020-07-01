@@ -6,21 +6,21 @@ const COMPLEX_VALUE_STRING_PRESENTATION = 'complex value';
 
 function render(array $ast): string
 {
-    $format = function (array $data, $keys = []) use (&$format): string {
-
-        $outputLines = array_reduce($data, function ($acc, $item) use (&$format, $keys) {
+    $iter = function (array $data, $keys = []) use (&$iter): string {
+        
+        $outputLines = array_reduce($data, function ($acc, $item) use (&$iter, $keys) {
             $parentKeysLine = implode('.', $keys);
             ['key' => $key, 'type' => $type] = $item;
-
+            
             if ($type === 'nested') {
                 $keys[] = $key;
-                $acc[]  = $format($item['children'], $keys);
+                $acc[]  = $iter($item['children'], $keys);
                 return $acc;
             }
-
+            
             $key   = $parentKeysLine ? "$parentKeysLine.{$key}" : $key;
             $value = stringify($item['value']);
-
+            
             switch ($type) {
                 case 'removed':
                     $acc[] = "Property '$key' was removed";
@@ -35,11 +35,11 @@ function render(array $ast): string
             }
             return $acc;
         }, []);
-
+        
         return implode("\n", $outputLines);
     };
-
-    return $format($ast);
+    
+    return $iter($ast);
 }
 
 function stringify($value): string

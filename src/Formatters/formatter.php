@@ -8,8 +8,10 @@ function format($data, $format)
         case 'json':
             return json_encode($data);
         case 'plain':
-            return \Differ\Formatters\Plain\format($data);
+            return \Differ\Formatters\Plain\render($data);
+        case 'pretty':
+            return \Differ\Formatters\Pretty\render($data);
         default:
-            return \Differ\Formatters\Pretty\format($data);
+            throw new \InvalidArgumentException('Invalid format, could not format output data');
     }
 }

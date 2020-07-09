@@ -18,7 +18,7 @@
         "files": [
             "src/differ.php",
             "src/parser.php",
-            "src/Formatters/formatter.php",
+            "src/formatter.php",
             "src/Formatters/plain.php",
             "src/Formatters/pretty.php"
         ]

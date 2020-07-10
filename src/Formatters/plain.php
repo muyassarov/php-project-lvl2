@@ -25,6 +25,8 @@ function render(array $ast): string
                     return "Property '{$propertyName}' was changed. From '$value' to '$newValue'";
                 case 'unchanged':
                     break;
+                default:
+                    throw new \Error("Unknown node type: {$type}");
             }
         }, $data);
         

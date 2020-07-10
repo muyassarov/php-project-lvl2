@@ -28,7 +28,7 @@ function render(array $ast): string
                 case 'added':
                     return "{$indentChanged}+ {$key}: {$value}";
                 default:
-                    throw new \Exception('Invalid node type, node could not be rendered');
+                    throw new \Error("Unknown node type: {$type}");
             }
         }, $data);
         return implode("\n", $mapped);

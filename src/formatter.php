@@ -12,6 +12,6 @@ function format($data, $format)
         case 'pretty':
             return \Differ\Formatters\Pretty\render($data);
         default:
-            throw new \InvalidArgumentException('Invalid format, could not format output data');
+            throw new \Error("Unknown format: {$format}");
     }
 }

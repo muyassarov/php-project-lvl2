@@ -6,35 +6,34 @@ const NUMBER_OF_SPACES = 4;
 
 function render(array $ast): string
 {
-    $iter = function ($data, $level = 0) use (&$iter): string {
+    $iter = function ($data, $level = 1) use (&$iter): string {
         
-        $outputItems = array_map(function ($node) use (&$iter, $level) {
+        $mapped = array_map(function ($node) use (&$iter, $level) {
             ['key' => $key, 'type' => $type] = $node;
             
-            $indent   = str_repeat(' ', NUMBER_OF_SPACES * $level);
-            $value    = stringify($node['value'], $level);
-            $newValue = stringify($node['newValue'], $level);
-            
+            $indent        = str_repeat(' ', NUMBER_OF_SPACES * $level);
+            $indentChanged = str_repeat(' ', NUMBER_OF_SPACES * $level - 2);
+            $value         = stringify($node['value'], $level);
+            $newValue      = stringify($node['newValue'], $level);
             switch ($type) {
                 case 'nested':
                     $nodeStringRepresentation = $iter($node['children'], $level + 1);
-                    return "{$indent}  {$key}: {$nodeStringRepresentation}";
+                    return "{$indent}{$key}: {\n{$nodeStringRepresentation}\n{$indent}}";
                 case 'unchanged':
-                    return "{$indent}  {$key}: {$value}";
+                    return "{$indent}{$key}: {$value}";
                 case 'changed':
-                    return "{$indent}+ {$key}: {$newValue}\n  {$indent}- {$key}: {$value}";
+                    return "{$indentChanged}+ {$key}: {$newValue}\n{$indentChanged}- {$key}: {$value}";
                 case 'removed':
-                    return "{$indent}- {$key}: {$value}";
+                    return "{$indentChanged}- {$key}: {$value}";
                 case 'added':
-                    return "{$indent}+ {$key}: {$value}";
+                    return "{$indentChanged}+ {$key}: {$value}";
                 default:
                     throw new \Exception('Invalid node type, node could not be rendered');
             }
         }, $data);
-        $indent = str_repeat(' ', NUMBER_OF_SPACES * $level);
-        return "{\n  " . implode("\n  ", $outputItems) . "\n{$indent}}";
+        return implode("\n", $mapped);
     };
-    return $iter($ast);
+    return "{\n" . $iter($ast) . "\n}";
 }
 
 function stringify($value, $level)
@@ -46,17 +45,18 @@ function stringify($value, $level)
         return $value;
     }
     
-    $indent = str_repeat(' ', ($level + 1) * NUMBER_OF_SPACES);
-    $keys   = array_keys($value);
+    $indent     = str_repeat(' ', $level * NUMBER_OF_SPACES + 4);
+    $indentLast = str_repeat(' ', $level * NUMBER_OF_SPACES);
+    $keys       = array_keys($value);
     
     $arrayStrings = array_map(function ($key) use ($value, $level, $indent) {
         if (is_array($value[$key])) {
             $strValue = stringify($value[$key], $level + 1);
-            return "$indent  $key: $strValue";
+            return "{$indent}{$key}: $strValue";
         } else {
-            return "$indent  $key: {$value[$key]}";
+            return "{$indent}{$key}: {$value[$key]}";
         }
     }, $keys);
     
-    return "{\n  " . implode("\n  ", $arrayStrings) . "\n{$indent}}";
+    return "{\n" . implode("\n", $arrayStrings) . "\n{$indentLast}}";
 }

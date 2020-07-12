@@ -33,7 +33,8 @@ function render(array $ast): string
         }, $data);
         return implode("\n", $mapped);
     };
-    return "{\n" . $iter($ast) . "\n}";
+    $stringValue = $iter($ast);
+    return "{\n{$stringValue}\n}";
 }
 
 function stringify($value, $level)
@@ -49,14 +50,11 @@ function stringify($value, $level)
     $indentLast = str_repeat(' ', $level * NUMBER_OF_SPACES);
     $keys       = array_keys($value);
     
-    $arrayStrings = array_map(function ($key) use ($value, $level, $indent) {
-        if (is_array($value[$key])) {
-            $strValue = stringify($value[$key], $level + 1);
-            return "{$indent}{$key}: $strValue";
-        } else {
-            return "{$indent}{$key}: {$value[$key]}";
-        }
+    $mapped = array_map(function ($key) use ($value, $level, $indent) {
+        $strValue = stringify($value[$key], $level + 1);
+        return "{$indent}{$key}: $strValue";
     }, $keys);
-    
-    return "{\n" . implode("\n", $arrayStrings) . "\n{$indentLast}}";
+
+    $arrayStringRepresentation = implode("\n", $mapped);
+    return "{\n{$arrayStringRepresentation}\n{$indentLast}}";
 }

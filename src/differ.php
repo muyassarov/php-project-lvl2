@@ -45,9 +45,10 @@ function getFileDataType(string $filepath): string
 function diff($beforeData, $afterData): array
 {
     $iter = function ($oldNode, $newNode) use (&$iter) {
-        $oldNodeKeys = array_keys((array)$oldNode);
-        $newNodeKeys = array_keys((array)$newNode);
-        $unionKeys   = array_values(union($oldNodeKeys, $newNodeKeys));
+        $unionKeys = array_values(union(
+            array_keys(get_object_vars($oldNode)),
+            array_keys(get_object_vars($newNode))
+        ));
 
         return array_map(function ($key) use ($oldNode, $newNode, $iter) {
             if (!isset($newNode->{$key})) {

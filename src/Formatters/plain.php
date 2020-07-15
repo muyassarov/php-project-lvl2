@@ -8,9 +8,9 @@ const COMPLEX_VALUE_STRING_PRESENTATION = 'complex value';
 
 function render(array $ast): string
 {
-    $iter = function (array $data, $ancestry = '') use (&$iter): string {
+    $iter = function (array $data, $ancestry = '') use (&$iter): array {
         
-        $mapped = array_map(function ($node) use (&$iter, $ancestry) {
+        return array_map(function ($node) use (&$iter, $ancestry) {
             ['key' => $key, 'type' => $type] = $node;
             $propertyName = "{$ancestry}{$key}";
             $newValue     = stringify($node['newValue']);
@@ -31,13 +31,10 @@ function render(array $ast): string
                     throw new \Error("Unknown node type: {$type}");
             }
         }, $data);
-
-        $outputItems = flattenAll($mapped);
-        
-        return implode("\n", $outputItems);
     };
     
-    return $iter($ast);
+    $pieces = flattenAll($iter($ast));
+    return implode("\n", $pieces);
 }
 
 function stringify($value)

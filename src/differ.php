@@ -38,24 +38,26 @@ function getFileDataType(string $filepath): string
 
 /**
  * Get difference between arrays
- * @param array $beforeData
- * @param array $afterData
+ * @param object $beforeData
+ * @param object $afterData
  * @return array
  */
-function diff(array $beforeData, array $afterData): array
+function diff($beforeData, $afterData): array
 {
     $iter = function ($oldNode, $newNode) use (&$iter) {
-        $unionKeys = array_values(union(array_keys($oldNode), array_keys($newNode)));
+        $oldNodeKeys = array_keys((array)$oldNode);
+        $newNodeKeys = array_keys((array)$newNode);
+        $unionKeys   = array_values(union($oldNodeKeys, $newNodeKeys));
 
         return array_map(function ($key) use ($oldNode, $newNode, $iter) {
-            if (!array_key_exists($key, $newNode)) {
-                return createAstNode($key, 'removed', $oldNode[$key]);
-            } elseif (!array_key_exists($key, $oldNode)) {
-                return createAstNode($key, 'added', $newNode[$key]);
+            if (!isset($newNode->{$key})) {
+                return createAstNode($key, 'removed', $oldNode->{$key});
+            } elseif (!isset($oldNode->{$key})) {
+                return createAstNode($key, 'added', $newNode->{$key});
             } else {
-                $value    = $oldNode[$key];
-                $newValue = $newNode[$key];
-                if (is_array($value) && is_array($newValue)) {
+                $value    = $oldNode->{$key};
+                $newValue = $newNode->{$key};
+                if (is_object($value) && is_object($newValue)) {
                     $children = $iter($value, $newValue);
                     return createAstNode($key, 'nested', null, null, $children);
                 } elseif ($value == $newValue) {

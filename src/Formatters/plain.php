@@ -9,13 +9,12 @@ const COMPLEX_VALUE_STRING_PRESENTATION = 'complex value';
 function render(array $ast): string
 {
     $iter = function (array $data, $ancestry = '') use (&$iter): array {
-        
         return array_map(function ($node) use (&$iter, $ancestry) {
             ['key' => $key, 'type' => $type] = $node;
             $propertyName = "{$ancestry}{$key}";
             $newValue     = stringify($node['newValue']);
             $value        = stringify($node['value']);
-            
+
             switch ($type) {
                 case 'nested':
                     return $iter($node['children'], "{$propertyName}.");
@@ -32,12 +31,13 @@ function render(array $ast): string
             }
         }, $data);
     };
-    
-    $pieces = flattenAll($iter($ast));
-    return implode("\n", $pieces);
+
+    $mapped    = $iter($ast);
+    $flattened = flattenAll($mapped);
+    return implode("\n", $flattened);
 }
 
 function stringify($value)
 {
-    return is_array($value) ? COMPLEX_VALUE_STRING_PRESENTATION : $value;
+    return is_object($value) || is_array($value) ? COMPLEX_VALUE_STRING_PRESENTATION : $value;
 }

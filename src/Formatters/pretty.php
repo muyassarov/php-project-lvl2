@@ -48,10 +48,10 @@ function stringify($value, $level)
     
     $indent     = str_repeat(' ', $level * NUMBER_OF_SPACES + 4);
     $indentLast = str_repeat(' ', $level * NUMBER_OF_SPACES);
-    $keys       = array_keys($value);
+    $keys       = array_keys((array)$value);
     
     $mapped = array_map(function ($key) use ($value, $level, $indent) {
-        $strValue = stringify($value[$key], $level + 1);
+        $strValue = stringify($value->{$key}, $level + 1);
         return "{$indent}{$key}: $strValue";
     }, $keys);
 
